@@ -47,11 +47,11 @@ def main():
         df_frequencia.columns = ['ID_cliente', 'Frequencia']
 
         # Cálculo do Valor Monetário (se a coluna existir)
-        if 'ValorCompra' in df_compras.columns:
-            df_monetario = df_compras.groupby(by='ID_cliente', as_index=False)['ValorCompra'].sum()
+        if 'ValorTotal' in df_compras.columns:
+            df_monetario = df_compras.groupby(by='ID_cliente', as_index=False)['ValorTotal'].sum()
             df_monetario.columns = ['ID_cliente', 'ValorMonetario']
         else:
-            st.error("Erro: A coluna 'ValorCompra' não foi encontrada no arquivo. Verifique o nome correto.")
+            st.error("Erro: A coluna 'ValorTotal' não foi encontrada no arquivo. Verifique o nome correto.")
             return
 
         # Unindo os três DataFrames para formar a tabela RFV
@@ -62,3 +62,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
