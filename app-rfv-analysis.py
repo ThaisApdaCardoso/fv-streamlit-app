@@ -13,8 +13,10 @@ import numpy as np
 from datetime import datetime
 
 def load_data(file):
-    df = pd.read_csv(file, infer_datetime_format=True, parse_dates=['DiaCompra'])
-    return df
+    try:
+        return pd.read_csv(file, sep=None, engine='python', infer_datetime_format=True, parse_dates=['DiaCompra'])
+    except:
+        return pd.read_excel(file)
 
 def main():
     st.set_page_config(page_title='Análise RFV', layout='wide')
@@ -28,6 +30,9 @@ def main():
         df_compras = load_data(data_file)
         st.write("## Dados Carregados")
         st.write(df_compras.head())
+        
+        # Exibir nomes das colunas para depuração
+        st.write("Colunas do arquivo carregado:", df_compras.columns.tolist())
 
         dia_atual = datetime(2021, 12, 9)
         
@@ -41,9 +46,13 @@ def main():
         df_frequencia = df_compras.groupby(by='ID_cliente', as_index=False)['CodigoCompra'].nunique()
         df_frequencia.columns = ['ID_cliente', 'Frequencia']
 
-        # Cálculo do Valor Monetário
-        df_monetario = df_compras.groupby(by='ID_cliente', as_index=False)['ValorCompra'].sum()
-        df_monetario.columns = ['ID_cliente', 'ValorMonetario']
+        # Cálculo do Valor Monetário (se a coluna existir)
+        if 'ValorCompra' in df_compras.columns:
+            df_monetario = df_compras.groupby(by='ID_cliente', as_index=False)['ValorCompra'].sum()
+            df_monetario.columns = ['ID_cliente', 'ValorMonetario']
+        else:
+            st.error("Erro: A coluna 'ValorCompra' não foi encontrada no arquivo. Verifique o nome correto.")
+            return
 
         # Unindo os três DataFrames para formar a tabela RFV
         df_rfv = df_recencia.merge(df_frequencia, on='ID_cliente').merge(df_monetario, on='ID_cliente')
