@@ -30,13 +30,26 @@ def main():
         st.write(df_compras.head())
 
         dia_atual = datetime(2021, 12, 9)
+        
+        # Cálculo da Recência
         df_recencia = df_compras.groupby(by='ID_cliente', as_index=False)['DiaCompra'].max()
         df_recencia.columns = ['ID_cliente', 'DiaUltimaCompra']
         df_recencia['Recencia'] = df_recencia['DiaUltimaCompra'].apply(lambda x: (dia_atual - x).days)
         df_recencia.drop('DiaUltimaCompra', axis=1, inplace=True)
 
-        st.write("## Recência Calculada")
-        st.write(df_recencia.head())
+        # Cálculo da Frequência
+        df_frequencia = df_compras.groupby(by='ID_cliente', as_index=False)['CodigoCompra'].nunique()
+        df_frequencia.columns = ['ID_cliente', 'Frequencia']
+
+        # Cálculo do Valor Monetário
+        df_monetario = df_compras.groupby(by='ID_cliente', as_index=False)['ValorCompra'].sum()
+        df_monetario.columns = ['ID_cliente', 'ValorMonetario']
+
+        # Unindo os três DataFrames para formar a tabela RFV
+        df_rfv = df_recencia.merge(df_frequencia, on='ID_cliente').merge(df_monetario, on='ID_cliente')
+        
+        st.write("## Métricas RFV Calculadas")
+        st.write(df_rfv.head())
 
 if __name__ == "__main__":
     main()
